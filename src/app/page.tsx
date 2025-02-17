@@ -18,6 +18,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { toast } from "sonner";
 import React from "react";
 
 export default function Home() {
@@ -25,12 +26,44 @@ export default function Home() {
   const sourceCodeUrl = process.env.NEXT_PUBLIC_SOURCE_CODE_URL;
   const adminOTP = process.env.NEXT_PUBLIC_ADMIN_OTP;
   const [otp, setOtp] = React.useState("");
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [error, setError] = React.useState("");
+
+  const validateOTP = async (value: string) => {
+    setError("");
+    if (value === adminOTP) {
+      setIsLoading(true);
+      try {
+        // Simuler un délai de chargement de 2 secondes
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        toast.success("Authentification réussie", {
+          description: "Redirection vers le tableau de bord..."
+        });
+        setIsLoading(false);
+        setIsDialogOpen(false);
+        router.push("/dashboard");
+      } catch (error) {
+        setIsLoading(false);
+        toast.error("Une erreur est survenue", {
+          description: "Veuillez réessayer ultérieurement."
+        });
+      }
+    } else if (value.length === 6) {
+      setError("Code d'authentification incorrect");
+      toast.error("Code incorrect", {
+        description: "Veuillez vérifier votre code et réessayer."
+      });
+    }
+  };
 
   const handleOtpComplete = (value: string) => {
     setOtp(value);
-    if (value === adminOTP) {
-      router.push("/dashboard");
-    }
+    validateOTP(value);
+  };
+
+  const handleValidateClick = () => {
+    validateOTP(otp);
   };
 
   return (
@@ -108,11 +141,17 @@ export default function Home() {
               <p className="text-xs md:text-sm text-muted-foreground order-2 md:order-1">
                 Développé par Patrick Bartosik - © 2024
               </p>
-              <Dialog>
+              <Dialog open={isDialogOpen} onOpenChange={(open) => {
+                setIsDialogOpen(open);
+                if (!open) {
+                  setOtp("");
+                  setError("");
+                }
+              }}>
                 <DialogTrigger asChild>
                   <Button 
                     variant="ghost" 
-                    className="text-xs text-muted-foreground hover:text-white order-1 md:order-2"
+                    className="text-xs text-muted-foreground order-1 md:order-2"
                   >
                     Admin
                   </Button>
@@ -129,8 +168,12 @@ export default function Home() {
                       maxLength={6} 
                       className="gap-1 md:gap-2 w-full"
                       value={otp}
-                      onChange={(value) => setOtp(value)}
+                      onChange={(value) => {
+                        setOtp(value);
+                        setError("");
+                      }}
                       onComplete={handleOtpComplete}
+                      disabled={isLoading}
                     >
                       <InputOTPGroup>
                         <InputOTPSlot index={0} />
@@ -143,8 +186,25 @@ export default function Home() {
                         <InputOTPSlot index={5} />
                       </InputOTPGroup>
                     </InputOTP>
-                    <Button type="submit" className="bg-secondary w-full">
-                      Valider
+                    {error && (
+                      <p className="text-sm text-destructive">
+                        {error}
+                      </p>
+                    )}
+                    <Button 
+                      type="submit" 
+                      className="bg-secondary w-full"
+                      onClick={handleValidateClick}
+                      disabled={isLoading || otp.length !== 6}
+                    >
+                      {isLoading ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Vérification...
+                        </div>
+                      ) : (
+                        "Valider"
+                      )}
                     </Button>
                   </div>
                 </DialogContent>

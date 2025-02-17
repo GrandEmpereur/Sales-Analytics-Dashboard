@@ -4,6 +4,13 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { ProductOverview } from "@/components/widgets/product-overview";
+import { ActiveSales } from "@/components/widgets/active-sales";
+import { ProductRevenue } from "@/components/widgets/product-revenue";
+import { Analytics } from "@/components/widgets/analytics";
+import { SalesPerformance } from "@/components/widgets/sales-performance";
+import { TotalVisits } from "@/components/widgets/total-visits";
+import { TopProducts } from "@/components/widgets/top-products";
 
 export default function Page() {
   const pathname = usePathname();
@@ -49,112 +56,23 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Top Row */}
+      {/* Top Row - Overview Widgets */}
       <div className="grid gap-4 md:grid-cols-3">
-        {/* Product Overview */}
-        <div className="p-6 border rounded-xl">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-sm text-muted-foreground flex items-center gap-2">
-              Product overview
-              <span className="inline-block w-4 h-4 rounded-full border" />
-            </h3>
-            <select className="text-sm border rounded-lg px-3 py-1">
-              <option>This month</option>
-            </select>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <div className="text-3xl font-semibold">$43,630</div>
-              <div className="text-sm text-muted-foreground">Total sales</div>
-            </div>
-            <div className="flex justify-between items-center">
-              <div className="text-sm">Select by product</div>
-              <div className="text-sm">New sales: 453</div>
-            </div>
-            <div className="flex gap-2">
-              <span className="px-4 py-1 bg-orange-500/10 text-orange-600 rounded-full text-sm">Cosmetics</span>
-              <span className="px-4 py-1 bg-orange-100 text-orange-600 rounded-full text-sm">Housewear</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Active Sales */}
-        <div className="p-6 border rounded-xl">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-sm text-muted-foreground flex items-center gap-2">
-              Active sales
-              <span className="inline-block w-4 h-4 rounded-full border" />
-            </h3>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <div className="text-3xl font-semibold">$27,064</div>
-              <div className="text-sm text-green-500">vs last month +12%</div>
-            </div>
-            <div className="flex justify-center gap-4">
-              {/* Placeholder for bar chart */}
-              <div className="w-4 h-16 bg-orange-500 rounded-full" />
-              <div className="w-4 h-12 bg-orange-200 rounded-full" />
-              <div className="w-4 h-8 bg-orange-100 rounded-full" />
-            </div>
-            <div className="flex justify-end">
-              <button className="text-sm text-muted-foreground hover:text-foreground">
-                See Details →
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Product Revenue */}
-        <div className="p-6 border rounded-xl">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-sm text-muted-foreground flex items-center gap-2">
-              Product Revenue
-              <span className="inline-block w-4 h-4 rounded-full border" />
-            </h3>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <div className="text-3xl font-semibold">$16,568</div>
-              <div className="text-sm text-green-500">vs last month +7%</div>
-            </div>
-            <div className="flex justify-center">
-              {/* Placeholder for circle progress */}
-              <div className="w-24 h-24 rounded-full border-8 border-orange-500/20 border-t-orange-500" />
-            </div>
-            <div className="flex justify-end">
-              <button className="text-sm text-muted-foreground hover:text-foreground">
-                See Details →
-              </button>
-            </div>
-          </div>
-        </div>
+        <ProductOverview />
+        <ActiveSales />
+        <ProductRevenue />
       </div>
 
-      {/* Analytics Section */}
+      {/* Middle Row - Analytics & Performance */}
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Analytics Chart */}
-        <div className="p-6 border rounded-xl">
-          {/* Chart content will go here */}
-        </div>
-
-        {/* Sales Performance */}
-        <div className="p-6 border rounded-xl">
-          {/* Performance content will go here */}
-        </div>
+        <Analytics />
+        <SalesPerformance />
       </div>
 
-      {/* Bottom Row */}
+      {/* Bottom Row - Visits & Products */}
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Total Visits */}
-        <div className="p-6 border rounded-xl">
-          {/* Visits content will go here */}
-        </div>
-
-        {/* Top Products */}
-        <div className="p-6 border rounded-xl">
-          {/* Products table will go here */}
-        </div>
+        <TotalVisits />
+        <TopProducts />
       </div>
     </div>
   )
