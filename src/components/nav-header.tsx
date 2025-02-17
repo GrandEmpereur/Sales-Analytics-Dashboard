@@ -26,15 +26,15 @@ export function NavHeader() {
                 <div className="flex items-center">
                     <div className="flex -space-x-2 mr-4">
                         <Avatar className="w-8 h-8 border-2 border-background">
-                            <AvatarImage src="/avatars/01.png" />
-                            <AvatarFallback>AC</AvatarFallback>
+                            <AvatarImage src="https://randomuser.me/api/portraits/men/32.jpg" alt="User avatar" />
+                            <AvatarFallback>JD</AvatarFallback>
                         </Avatar>
                         <Avatar className="w-8 h-8 border-2 border-background">
-                            <AvatarImage src="/avatars/02.png" />
+                            <AvatarImage src="https://randomuser.me/api/portraits/women/45.jpg" alt="User avatar" />
                             <AvatarFallback>BC</AvatarFallback>
                         </Avatar>
                         <Avatar className="w-8 h-8 border-2 border-background">
-                            <AvatarImage src="/avatars/03.png" />
+                            <AvatarImage src="https://randomuser.me/api/portraits/men/67.jpg" alt="User avatar" />
                             <AvatarFallback>CC</AvatarFallback>
                         </Avatar>
                     </div>
