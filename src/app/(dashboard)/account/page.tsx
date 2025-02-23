@@ -138,10 +138,6 @@ export default function AccountPage() {
                                     <Label htmlFor="email">Email</Label>
                                     <Input id="email" type="email" defaultValue={user?.email} />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="phone">Téléphone</Label>
-                                    <Input id="phone" type="tel" defaultValue={user?.phone} />
-                                </div>
                             </div>
                         </CardContent>
                     </Card>
