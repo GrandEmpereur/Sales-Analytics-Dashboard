@@ -21,6 +21,15 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination"
 
 export default function CustomersPage() {
     const pathname = usePathname();
@@ -29,6 +38,8 @@ export default function CustomersPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedStatus, setSelectedStatus] = useState<CustomerStatus | "all">("all");
     const [selectedTier, setSelectedTier] = useState<CustomerTier | "all">("all");
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     // Filtrer les clients
     const filteredCustomers = mockCustomers.filter(customer => {
@@ -40,6 +51,11 @@ export default function CustomersPage() {
         const matchesTier = selectedTier === "all" || customer.tier === selectedTier;
         return matchesSearch && matchesStatus && matchesTier;
     });
+
+    // Pagination
+    const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedCustomers = filteredCustomers.slice(startIndex, startIndex + itemsPerPage);
 
     // Calculer les statistiques
     const stats = {
@@ -221,7 +237,7 @@ export default function CustomersPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredCustomers.map((customer) => (
+                        {paginatedCustomers.map((customer) => (
                             <TableRow key={customer.id}>
                                 <TableCell>
                                     <div className="flex items-center gap-3">
@@ -254,6 +270,59 @@ export default function CustomersPage() {
                     </TableBody>
                 </Table>
             </Card>
+
+            {/* Pagination */}
+            <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                    Affichage de {startIndex + 1} à {Math.min(startIndex + itemsPerPage, filteredCustomers.length)} sur {filteredCustomers.length} clients
+                </p>
+                <Pagination>
+                    <PaginationContent>
+                        <PaginationItem>
+                            <PaginationPrevious 
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                            />
+                        </PaginationItem>
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                            // Afficher seulement les pages proches de la page courante
+                            if (
+                                page === 1 ||
+                                page === totalPages ||
+                                (page >= currentPage - 2 && page <= currentPage + 2)
+                            ) {
+                                return (
+                                    <PaginationItem key={page}>
+                                        <PaginationLink
+                                            onClick={() => setCurrentPage(page)}
+                                            isActive={currentPage === page}
+                                            className="cursor-pointer"
+                                        >
+                                            {page}
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                );
+                            } else if (
+                                page === currentPage - 3 ||
+                                page === currentPage + 3
+                            ) {
+                                return (
+                                    <PaginationItem key={page}>
+                                        <PaginationEllipsis />
+                                    </PaginationItem>
+                                );
+                            }
+                            return null;
+                        })}
+                        <PaginationItem>
+                            <PaginationNext 
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                            />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
+            </div>
         </div>
     );
 }

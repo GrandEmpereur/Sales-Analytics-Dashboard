@@ -30,9 +30,10 @@ export default function ChatPage() {
             active: "bg-green-500",
             pending: "bg-yellow-500",
             resolved: "bg-blue-500",
-            archived: "bg-gray-500"
+            archived: "bg-gray-500",
+            closed: "bg-gray-500"
         };
-        return colors[status];
+        return colors[status] || "bg-gray-500";
     };
 
     return (
