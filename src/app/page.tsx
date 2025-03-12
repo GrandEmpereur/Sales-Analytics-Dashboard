@@ -20,34 +20,113 @@ import {
 } from "@/components/ui/input-otp";
 import { toast } from "sonner";
 import React from "react";
+import { authenticateUser } from "@/lib/auth";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { mockUsers } from "@/mocks/users";
+import { useSession } from "@/contexts/session-context";
+
+// Schéma de validation amélioré
+const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, "L'email est requis")
+    .email("Format d'email invalide"),
+  password: z
+    .string()
+    .min(1, "Le mot de passe est requis")
+    .min(6, "Le mot de passe doit contenir au moins 6 caractères"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function Home() {
   const router = useRouter();
   const sourceCodeUrl = process.env.NEXT_PUBLIC_SOURCE_CODE_URL;
   const adminOTP = process.env.NEXT_PUBLIC_ADMIN_OTP;
-  const [otp, setOtp] = React.useState("");
+  
   const [isLoading, setIsLoading] = React.useState(false);
+  const [otp, setOtp] = React.useState("");
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [error, setError] = React.useState("");
+
+  const { setUser } = useSession();
+
+  // Initialiser le formulaire avec react-hook-form
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const user = await authenticateUser({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (user) {
+        setUser(user);
+        toast.success("Connexion réussie", {
+          description: `Bienvenue ${user.firstName} ${user.lastName}`,
+        });
+        router.push("/dashboard");
+      } else {
+        toast.error("Échec de la connexion", {
+          description: "Email ou mot de passe incorrect",
+        });
+      }
+    } catch (error) {
+      toast.error("Une erreur est survenue", {
+        description: "Veuillez réessayer ultérieurement",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const validateOTP = async (value: string) => {
     setError("");
     if (value === adminOTP) {
       setIsLoading(true);
       try {
-        // Simuler un délai de chargement de 2 secondes
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        toast.success("Authentification réussie", {
-          description: "Redirection vers le tableau de bord..."
-        });
-        setIsLoading(false);
-        setIsDialogOpen(false);
-        router.push("/dashboard");
+        const adminUser = mockUsers.find(user => user.role === 'admin');
+        if (adminUser) {
+          const user = await authenticateUser({
+            email: adminUser.email,
+            password: adminUser.password
+          });
+
+          if (user) {
+            setUser(user);
+            toast.success("Authentification réussie", {
+              description: "Redirection vers le tableau de bord..."
+            });
+            setIsDialogOpen(false);
+            router.push("/dashboard");
+          }
+        }
       } catch (error) {
-        setIsLoading(false);
         toast.error("Une erreur est survenue", {
           description: "Veuillez réessayer ultérieurement."
         });
+      } finally {
+        setIsLoading(false);
       }
     } else if (value.length === 6) {
       setError("Code d'authentification incorrect");
@@ -96,37 +175,70 @@ export default function Home() {
             </CardHeader>
 
             <CardContent className="space-y-6 p-0 pt-8">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="identifier" className="text-muted-foreground">
-                    Email professionnel
-                  </Label>
-                  <Input
-                    id="identifier"
-                    type="email"
-                    placeholder="votre@email.com"
-                    className="bg-white/10 border-0 text-white placeholder:text-muted-foreground focus-visible:ring-secondary"
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-muted-foreground">
+                          Email professionnel
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="email"
+                            placeholder="votre@email.com"
+                            className="bg-white/10 border-0 text-white placeholder:text-muted-foreground focus-visible:ring-secondary"
+                            disabled={isLoading}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-400" />
+                      </FormItem>
+                    )}
                   />
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-muted-foreground">
-                    Mot de passe
-                  </Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    className="bg-white/10 border-0 text-white placeholder:text-muted-foreground focus-visible:ring-secondary"
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-muted-foreground">
+                          Mot de passe
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="password"
+                            placeholder="••••••••"
+                            className="bg-white/10 border-0 text-white placeholder:text-muted-foreground focus-visible:ring-secondary"
+                            disabled={isLoading}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-400" />
+                      </FormItem>
+                    )}
                   />
-                </div>
-              </div>
+
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-secondary hover:bg-secondary/90 text-white"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Connexion...
+                      </div>
+                    ) : (
+                      "Se connecter"
+                    )}
+                  </Button>
+                </form>
+              </Form>
 
               <div className="space-y-4">
-                <Button className="w-full bg-secondary hover:bg-secondary/90 text-white">
-                  Explorer la Démo
-                </Button>
-
                 <Button 
                   variant="outline" 
                   className="w-full border-white/20 text-muted-foreground hover:bg-white/10 hover:text-white"

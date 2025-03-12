@@ -10,6 +10,7 @@ import {
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { Separator } from "./ui/separator"
+import Link from "next/link"
 
 export function NavMain({
     items,
@@ -39,7 +40,7 @@ export function NavMain({
                                         "bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 hover:text-orange-600" : 
                                         undefined}
                                 >
-                                    <a href={item.url}>
+                                    <Link href={item.url}>
                                         {item.icon && <item.icon className={item.isActive ? "text-orange-600" : undefined} />}
                                         <span>{item.title}</span>
                                         {item.badge && (
@@ -47,7 +48,7 @@ export function NavMain({
                                                 {item.badge}
                                             </span>
                                         )}
-                                    </a>
+                                    </Link>
                                 </SidebarMenuButton>
 
                             </SidebarMenuItem>

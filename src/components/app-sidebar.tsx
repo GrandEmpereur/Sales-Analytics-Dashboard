@@ -9,15 +9,13 @@ import {
     Users,
     MessageCircle,
     Mail,
-    BarChart2,
     Settings,
-    Link,
     User,
     Users2,
     MessageSquare,
     Clock,
-    Link2,
-    Bike
+    Bike,
+    Link2
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -32,55 +30,56 @@ import {
 } from "@/components/ui/sidebar"
 import { NavFooter } from "@/components/nav-footer"
 import { Separator } from "@/components/ui/separator"
+import { useSession } from "@/contexts/session-context"
+import { getTeamById } from "@/mocks/users"
 
-// Nouvelle structure de données
-const data = {
-    user: {
-        name: "Jevline kief",
-        email: "j.kief@example.com",
-        avatar: "https://randomuser.me/api/portraits/men/45.jpg",
-    },
-    teams: [
-        {
-            name: "Vesetly Inc.",
-            logo: LayoutDashboard,
-            plan: "Free Plan",
-        }
-    ],
-    navMain: [
-        {
-            title: "MAIN MENU",
-            items: [
-                {
-                    title: "Dashboard",
-                    url: "/dashboard",
-                    icon: LayoutDashboard,
-                    isActive: true,
-                },
-                {
-                    title: "Products",
-                    url: "/products",
-                    icon: Package,
-                },
-                {
-                    title: "Order",
-                    url: "/order",
-                    icon: ShoppingCart,
-                },
-                {
-                    title: "Customers",
-                    url: "/customers",
-                    icon: Users,
-                },
-                {
-                    title: "Chat",
-                    url: "/chat",
-                    icon: MessageCircle,
-                    badge: "22"
-                },
-            ]
-        },
-        {
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+    const pathname = usePathname()
+    const { user } = useSession();
+    const userTeam = user ? getTeamById(user.teamId) : null;
+
+    // Fonction pour vérifier si un item est actif
+    const isActive = (url: string) => pathname === url
+
+    // Structure de données basée sur le rôle de l'utilisateur
+    const getNavItems = () => {
+        const baseItems = [
+            {
+                title: "MAIN MENU",
+                items: [
+                    {
+                        title: "Dashboard",
+                        url: "/dashboard",
+                        icon: LayoutDashboard,
+                        isActive: true,
+                    },
+                    {
+                        title: "Products",
+                        url: "/products",
+                        icon: Package,
+                    },
+                    {
+                        title: "Order",
+                        url: "/order",
+                        icon: ShoppingCart,
+                    },
+                    {
+                        title: "Customers",
+                        url: "/customers",
+                        icon: Users,
+                    },
+                    {
+                        title: "Chat",
+                        url: "/chat",
+                        icon: MessageCircle,
+                        badge: "22"
+                    },
+                ]
+            }
+        ];
+
+        // Section "OTHER"
+        baseItems.push({
             title: "OTHER",
             items: [
                 {
@@ -104,8 +103,10 @@ const data = {
                     icon: Bike,
                 }
             ]
-        },
-        {
+        });
+
+        // Section "ACCOUNT"
+        baseItems.push({
             title: "ACCOUNT",
             items: [
                 {
@@ -119,48 +120,47 @@ const data = {
                     icon: Users2,
                 },
             ]
-        }
-    ],
-    footer: [
-        {
-            title: "Settings",
-            url: "/settings",
-            icon: Settings,
-        },
-        {
-            title: "Feedback",
-            url: "/feedback",
-            icon: MessageSquare,
-        }
-    ]
-}
+        });
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    const pathname = usePathname()
+        return baseItems;
+    };
 
-    // Fonction pour vérifier si un item est actif
-    const isActive = (url: string) => pathname === url
-
-    // Mise à jour des données avec l'état actif dynamique
     const navData = {
-        ...data,
-        navMain: data.navMain.map(section => ({
+        navMain: getNavItems().map(section => ({
             ...section,
             items: section.items.map(item => ({
                 ...item,
                 isActive: isActive(item.url)
             }))
         })),
-        footer: data.footer.map(item => ({
-            ...item,
-            isActive: isActive(item.url)
-        }))
-    }
+        footer: [
+            {
+                title: "Settings",
+                url: "/settings",
+                icon: Settings,
+            },
+            {
+                title: "Feedback",
+                url: "/feedback",
+                icon: MessageSquare,
+            }
+        ]
+    };
 
     return (
         <Sidebar collapsible="icon" {...props}>
             <SidebarHeader>
-                <TeamSwitcher teams={data.teams} />
+                {userTeam && (
+                    <TeamSwitcher
+                        teams={[
+                            {
+                                name: userTeam.name,
+                                logo: LayoutDashboard,
+                                plan: userTeam.plan
+                            }
+                        ]}
+                    />
+                )}
             </SidebarHeader>
             <Separator />
             <SidebarContent>
@@ -168,9 +168,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarContent>
             <SidebarFooter>
                 <NavFooter items={navData.footer} />
-                <NavUser user={data.user} />
+                {user && (
+                    <NavUser
+                        user={{
+                            name: `${user.firstName} ${user.lastName}`,
+                            email: user.email,
+                            avatar: user.avatar
+                        }}
+                    />
+                )}
             </SidebarFooter>
             <SidebarRail />
         </Sidebar>
-    )
+    );
 }
